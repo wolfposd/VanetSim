@@ -21,30 +21,29 @@ import java.awt.Color;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.CyclicBarrier;
-import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
-import java.util.zip.ZipOutputStream;
 
 import javax.swing.JFileChooser;
+import javax.xml.bind.JAXB;
+import javax.xml.bind.Marshaller;
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlElementWrapper;
+import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.stream.XMLInputFactory;
-import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamReader;
-import javax.xml.stream.XMLStreamWriter;
 
 import org.codehaus.staxmate.SMInputFactory;
-import org.codehaus.staxmate.SMOutputFactory;
 import org.codehaus.staxmate.in.SMInputCursor;
-import org.codehaus.staxmate.out.SMOutputDocument;
-import org.codehaus.staxmate.out.SMOutputElement;
+import org.eclipse.persistence.oxm.annotations.XmlPath;
 
 import vanetsim.ErrorLog;
 import vanetsim.VanetSimStart;
@@ -53,9 +52,9 @@ import vanetsim.gui.controlpanels.MapSizeDialog;
 import vanetsim.gui.helpers.MouseClickManager;
 import vanetsim.localization.Messages;
 import vanetsim.routing.A_Star.A_Star_LookupTableFactory;
+import vanetsim.scenario.RSU;
 import vanetsim.scenario.Scenario;
 import vanetsim.scenario.Vehicle;
-import vanetsim.scenario.RSU;
 import vanetsim.scenario.events.EventSpot;
 
 /**
@@ -67,6 +66,8 @@ import vanetsim.scenario.events.EventSpot;
  * Because of the regions, for example rendering and distance calculations only need to be done
  * on a limited amount of vehicles/streets/nodes which helps handling large maps a lot.
  */
+@XmlRootElement
+@XmlAccessorType(XmlAccessType.NONE)
 public final class Map{
 
 	/** The only instance of this class (singleton). */
@@ -75,17 +76,21 @@ public final class Map{
 	/** The width of a single lane (3m). Used in various other places in this program! */
 	public static final int LANE_WIDTH = 300;
 
-	/** The width of the map in cm. */
-	private int width_ = 0;
+    /** The width of the map in cm. */
+    @XmlPath("Settings[1]/Map_width[1]/text()")
+    private int width_ = 0;
 
-	/** The height of the map in cm. */
-	private int height_ = 0;
+    /** The height of the map in cm. */
+    @XmlPath("Settings[1]/Map_height[1]/text()")
+    private int height_ = 0;
 
-	/** The width of a region in cm. */
-	private int regionWidth_ = 0;
+    /** The width of a region in cm. */
+    @XmlPath("Settings[1]/Region_width[1]/text()")
+    private int regionWidth_ = 0;
 
-	/** The height of a region in cm. */
-	private int regionHeight_ = 0;
+    /** The height of a region in cm. */
+    @XmlPath("Settings[1]/Region_height[1]/text()")
+    private int regionHeight_ = 0;
 
 	/** The amount of regions in x direction. */
 	private int regionCountX_ = 0;
@@ -95,11 +100,18 @@ public final class Map{
 
 	/** An array holding all {@link Region}s. */
 	private Region[][] regions_ = null;
+	
+	/** JAXB only */
+    @XmlElement(name = "Street")
+    @XmlElementWrapper(name = "Streets")
+    public Set<Street> streets = null;
 
 	/** A flag to signal if loading is ready. While loading is in progress, simulation and rendering is not possible. */
 	private boolean ready_ = true;	
 
 	/** A list for amenitys */
+	@XmlElement(name = "Amenity")
+	@XmlElementWrapper(name="Amenities")
 	private ArrayList<Node> amenityList_ = new ArrayList<Node>();
 	
 	/** the map name */
@@ -195,7 +207,8 @@ public final class Map{
 
 		//start a thread which calculates bridges in background so that loading is faster (it's just eyecandy and not necessary otherwise ;))
 		Runnable job = new Runnable() {
-			public void run(){
+			@Override
+            public void run(){
 				for(int i = 0; i < regionCountX_; ++i){
 					for(int j = 0; j < regionCountY_; ++j){
 						regions_[i][j].checkStreetsForBridges();
@@ -405,89 +418,27 @@ public final class Map{
 	 * @param file	the file in which to save
 	 * @param zip	if <code>true</code>, file is saved in a compressed zip file (extension .zip is added to <code>file</code>!). If <code>false</code>, no compression is made.
 	 */
-	public void save(File file, boolean zip){
-		try{
-			if(!Renderer.getInstance().isConsoleStart())VanetSimStart.setProgressBar(true);
-			ErrorLog.log(Messages.getString("Map.savingMap") + file.getName(), 3, getClass().getName(), "save", null); //$NON-NLS-1$ //$NON-NLS-2$
-			int i, j, k;
-			Street[] streetsArray;
-			Street street;
-			SMOutputElement level1, level2;
+    public void save(File file, boolean zip)
+    {
+        try
+        {
+            if (!Renderer.getInstance().isConsoleStart())
+            {
+                VanetSimStart.setProgressBar(true);
+            }
+            ErrorLog.log(Messages.getString("Map.savingMap") + file.getName(), 3, getClass().getName(), "save", null); //$NON-NLS-1$ //$NON-NLS-2$
 
-			OutputStream filestream;
-			if(zip){
-				filestream = new ZipOutputStream(new FileOutputStream(file + ".zip")); //$NON-NLS-1$
-				((ZipOutputStream) filestream).putNextEntry(new ZipEntry(file.getName()));
-			} else filestream = new FileOutputStream(file);
-			XMLStreamWriter xw = XMLOutputFactory.newInstance().createXMLStreamWriter(filestream);
-			SMOutputDocument doc = SMOutputFactory.createOutputDocument(xw);
-			doc.setIndentation("\n\t\t\t\t\t\t\t\t", 2, 1); ;  //$NON-NLS-1$
-			doc.addComment("Generated on " + new SimpleDateFormat("dd.MM.yyyy HH:mm:ss").format(new Date())); //$NON-NLS-1$ //$NON-NLS-2$
-			doc.addComment("This file may contain data from the OpenStreetMap project which is licensed under the Creative Commons Attribution-ShareAlike 2.0 license."); //$NON-NLS-1$
-
-			SMOutputElement root = doc.addElement("Map");			 //$NON-NLS-1$
-			level1 = root.addElement("Settings"); //$NON-NLS-1$
-			level2 = level1.addElement("Map_height"); //$NON-NLS-1$
-			level2.addValue(height_);
-			level2 = level1.addElement("Map_width"); //$NON-NLS-1$
-			level2.addValue(width_);
-			level2 = level1.addElement("Region_height"); //$NON-NLS-1$
-			level2.addValue(regionHeight_);
-			level2 = level1.addElement("Region_width"); //$NON-NLS-1$
-			level2.addValue(regionWidth_);
-			SMOutputElement streets = root.addElement("Streets");			 //$NON-NLS-1$
-
-			for(i = 0; i < regionCountX_; ++i){
-				for(j = 0; j < regionCountY_; ++j){
-					streetsArray = regions_[i][j].getStreets();
-					for(k = 0; k < streetsArray.length; ++k){
-						street = streetsArray[k];
-						if(street.getMainRegion() == regions_[i][j]){	//as a street can be in multiple regions only output it in the "main" region!
-							level1 = streets.addElement("Street"); //$NON-NLS-1$
-							level1.addElement("Name").addCharacters(street.getName()); //$NON-NLS-1$							
-							level2 = level1.addElement("StartNode"); //$NON-NLS-1$
-							level2.addElement("x").addValue(street.getStartNode().getX());; //$NON-NLS-1$
-							level2.addElement("y").addValue(street.getStartNode().getY()); //$NON-NLS-1$
-							if(street.getStartNode().isHasTrafficSignal_()) {
-								level2.addElement("trafficSignal").addCharacters("true");
-								if(street.getStartNode().hasNonDefaultSettings()) level2.addElement("TrafficSignalExceptions").addCharacters(street.getStartNode().getSignalExceptionsInString());
-							}
-							else level2.addElement("trafficSignal").addCharacters("false");
-							level2 = level1.addElement("EndNode"); //$NON-NLS-1$
-							level2.addElement("x").addValue(street.getEndNode().getX()); //$NON-NLS-1$
-							level2.addElement("y").addValue(street.getEndNode().getY()); //$NON-NLS-1$
-							if(street.getEndNode().isHasTrafficSignal_()) {
-								level2.addElement("trafficSignal").addCharacters("true");
-								if(street.getEndNode().hasNonDefaultSettings()) level2.addElement("TrafficSignalExceptions").addCharacters(street.getEndNode().getSignalExceptionsInString());
-							}
-							else level2.addElement("trafficSignal").addCharacters("false");
-							if(street.isOneway()) level1.addElement("Oneway").addCharacters("true"); //$NON-NLS-1$ //$NON-NLS-2$
-							else level1.addElement("Oneway").addCharacters("false"); //$NON-NLS-1$ //$NON-NLS-2$
-							level1.addElement("StreetType").addCharacters(street.getStreetType_()); //$NON-NLS-1$
-							level1.addElement("Lanes").addValue(street.getLanesCount()); //$NON-NLS-1$
-							level1.addElement("Speed").addValue(street.getSpeed()); //$NON-NLS-1$
-							level1.addElement("Color").addValue(street.getDisplayColor().getRGB()); //$NON-NLS-1$
-						}
-					}
-				}
-			}
-			
-			SMOutputElement amenities = root.addElement("Amenities"); //$NON-NLS-1$
-
-			//save the list of amenities (e.g. schools, hospitals...)
-			for(Node n: amenityList_){
-				level1 = amenities.addElement("Amenity"); //$NON-NLS-1$
-				level1.addElement("x").addValue(n.getX()); //$NON-NLS-1$
-				level1.addElement("y").addValue(n.getY()); //$NON-NLS-1$
-				level1.addElement("amenity").addCharacters(n.getAmenity_());
-			}
-			
-			doc.closeRoot();
-			xw.close();
-			filestream.close();
-		}catch (Exception e) {ErrorLog.log(Messages.getString("Map.errorSavingMap") , 6, getClass().getName(), "save", e);} //$NON-NLS-1$ //$NON-NLS-2$
-		if(!Renderer.getInstance().isConsoleStart())VanetSimStart.setProgressBar(false);
-	}
+            JAXB.marshal(this, file);
+        }
+        catch (Exception e)
+        {
+            ErrorLog.log(Messages.getString("Map.errorSavingMap"), 6, getClass().getName(), "save", e);
+        }
+        if (!Renderer.getInstance().isConsoleStart())
+        {
+            VanetSimStart.setProgressBar(false);
+        }
+    }
 
 	/**
 	 * Add a new node to the correct region. A node can only be in one region.
@@ -971,7 +922,8 @@ public final class Map{
 		int returnVal = filechooser.showSaveDialog(VanetSimStart.getMainFrame());
 		if (returnVal == JFileChooser.APPROVE_OPTION) {
 			Runnable job = new Runnable() {
-				public void run() {
+                @Override
+                public void run() {
 					File file = filechooser.getSelectedFile();
 					if(filechooser.getAcceptAllFileFilter() != filechooser.getFileFilter() && !file.getName().toLowerCase().endsWith(".xml")) file = new File(file.getAbsolutePath() + ".xml"); //$NON-NLS-1$ //$NON-NLS-2$
 					Map.getInstance().save(file, false);
@@ -1149,5 +1101,35 @@ public final class Map{
 			
 	
 	}
+	
+	/*
+	 * ============================================================================================================
+	 *     JAXB Marshalling help
+	 * ============================================================================================================
+	 */
+	
+    void beforeMarshal(Marshaller m)
+    {
+        System.out.println("before Marshall");
+        streets = new HashSet<Street>();
+        for (int i = 0; i < regions_.length; ++i)
+        {
+            for (int j = 0; j < regions_[i].length; ++j)
+            {
+                for (Street s : regions_[i][j].getStreets())
+                {
+                    if (s != null)
+                        streets.add(s);
+                }
+            }
+        }
+    }
+
+    void afterMarshal(Marshaller m)
+    {
+        System.out.println("after Marshall");
+
+        streets = null;
+    }
 	
 }

@@ -21,6 +21,12 @@ import java.awt.Color;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
 
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+
 import vanetsim.scenario.LaneContainer;
 import vanetsim.scenario.LaneObject;
 
@@ -28,6 +34,8 @@ import vanetsim.scenario.LaneObject;
 /**
  * A street on the map.
  */
+@XmlRootElement
+@XmlAccessorType(XmlAccessType.NONE)
 public final class Street {
 	
 	/** The length in cm. Though this is a redundant information, it is cached here in order to improve performance! */
@@ -49,27 +57,36 @@ public final class Street {
 	private final LaneContainer endToStartLane_ = new LaneContainer(false);
 	
 	/** An identifier for this street. */
+	@XmlElement(name="Name")
 	private String name_;
 	
 	/** The start node of the street. */
+	@XmlElement(name="StartNode")
 	private Node startNode_;
 	
 	/** The end node of the street. */
+	@XmlElement(name="EndNode")
 	private Node endNode_;
 	
 	/** The maximum speed allowed on this street. */
+	@XmlElement(name="Speed")
 	private int maxSpeed_;
 	
 	/** Indicates if this is a oneway-street. */
+	@XmlElement(name="OneWay")
 	private boolean oneway_;
 	
 	/** Type of Street */
+	@XmlElement(name="StreetType")
 	private String streetType_;
 	
 	/** Indicates how much lanes this street has per direction. */
+	@XmlElement(name="Lanes")
 	private int laneCount_;
 	
 	/** The color in which this street is displayed. */
+	@XmlElement(name="Color")
+	@XmlJavaTypeAdapter(JAXBColorAdapter.class)
 	private Color displayColor_;
 	
 	/** An <code>ArrayList</code> which stores points (two successive points are one line). The points are used for rendering of bridges. */
@@ -103,6 +120,21 @@ public final class Street {
 
 	/** set a flag if the street node is a priority street-node (only for performance issues) */
 	private boolean priorityOnStartNode = false;	
+	
+	
+	@SuppressWarnings("unused")
+    private Street()
+	{
+	    name_ = "";
+        streetType_ = "";
+        displayColor_ = Color.RED;
+        laneCount_ = 0;
+        maxSpeed_ = 0;
+        xFactor_ = 0;
+        yFactor_ = 0;
+        mainRegion_ = null;
+        length_ = 0;
+	}
 	
 	/**
 	 * Instantiates a new street.
@@ -466,7 +498,8 @@ public final class Street {
 	 * 
 	 * @see java.lang.Object#equals(java.lang.Object)
 	 */
-	public boolean equals(Object other){
+	@Override
+    public boolean equals(Object other){
 		if(other == null) return false;
 		else if (!this.getClass().equals(other.getClass())) return false;
 		else {
@@ -483,7 +516,8 @@ public final class Street {
 	 * 
 	 * @see java.lang.Object#hashCode()
 	 */
-	public int hashCode(){
+	@Override
+    public int hashCode(){
         return new Long(((long)startNode_.getX() - startNode_.getY() + endNode_.getY() - endNode_.getX())%Integer.MAX_VALUE).intValue();
     }
 

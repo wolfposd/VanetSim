@@ -20,11 +20,18 @@ package vanetsim.map;
 import java.awt.Color;
 import java.util.ArrayList;
 
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlRootElement;
+
 import vanetsim.scenario.RSU;
 
 /**
  * A node on the map.
  */
+@XmlRootElement(name="Amenity")
+@XmlAccessorType(XmlAccessType.NONE)
 public final class Node {
 			
 	/** A common counter to generate unique IDs */
@@ -34,12 +41,15 @@ public final class Node {
 	private final int nodeID_;
 	
 	/** The x coordinate. */
+	@XmlElement(name="x")
 	private int x_;
 	
 	/** The y coordinate. */
+	@XmlElement(name="y")
 	private int y_;	
 	
 	/** flag if the node has a traffic signal */
+	@XmlElement(name="trafficSignal")
 	private boolean hasTrafficSignal_;
 	
 	/** An array containing all streets going out from this node. */
@@ -67,10 +77,17 @@ public final class Node {
 	private int[] streetHasException_ = null;
 	
 	/** saves amenitys from the osm map */
+	@XmlElement(name="amenity")
 	private String amenity_ = "";
 	
 	/** the color of the node */
 	private Color nodeColor = Color.black;
+	
+	@SuppressWarnings("unused")
+	private Node()
+	{
+	    nodeID_ = -1;
+	}
 	
 	/**
 	 * Instantiates a new node.
@@ -541,7 +558,8 @@ public final class Node {
 	 * 
 	 * @see java.lang.Object#equals(java.lang.Object)
 	 */
-	public boolean equals(Object other){
+	@Override
+    public boolean equals(Object other){
 		if(other == null) return false;
 		else if (!this.getClass().equals(other.getClass())) return false;
 		else {
