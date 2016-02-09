@@ -21,9 +21,9 @@ import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.logging.FileHandler;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
 import java.util.logging.XMLFormatter;
-import java.util.logging.Logger;
 
 import javax.swing.JOptionPane;
 
@@ -70,6 +70,10 @@ public final class ErrorLog {
 		java.util.Date dt = new java.util.Date();
 		SimpleDateFormat df = new SimpleDateFormat("dd.MM.yyyy_HH.mm.ss"); //$NON-NLS-1$
 		try {
+            File logDir = new File(dir);
+            if (!logDir.exists())
+                logDir.mkdir();
+		    
 			FileHandler handler = new FileHandler(dir + "log_" + df.format(dt) + "." + format, true);//$NON-NLS-1$ //$NON-NLS-2$
 			logger.addHandler(handler);
 			logger.setUseParentHandlers(false); // don't log to console
