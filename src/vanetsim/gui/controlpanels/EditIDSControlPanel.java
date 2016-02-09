@@ -510,11 +510,13 @@ public class EditIDSControlPanel extends JPanel implements ListSelectionListener
 		
 		//define FileFilter for fileChooser
 		logFileFilter_ = new FileFilter(){
-			public boolean accept(File f) {
+			@Override
+            public boolean accept(File f) {
 				if (f.isDirectory()) return true;
 				return f.getName().toLowerCase().endsWith(".log"); //$NON-NLS-1$
 			}
-			public String getDescription () { 
+			@Override
+            public String getDescription () { 
 				return Messages.getString("EditLogControlPanel.logFiles") + " (*.log)"; //$NON-NLS-1$ //$NON-NLS-2$
 			}
 		};
@@ -529,7 +531,6 @@ public class EditIDSControlPanel extends JPanel implements ListSelectionListener
 	}
 	
 
-	@Override
 	public void valueChanged(ListSelectionEvent arg0) {
 		@SuppressWarnings("unchecked")
 		JList<Object> list = (JList<Object>) arg0.getSource();
@@ -584,7 +585,6 @@ public class EditIDSControlPanel extends JPanel implements ListSelectionListener
 	 */
 
 
-	@Override
 	public void actionPerformed(ActionEvent arg0) {
 		String command = arg0.getActionCommand();
 		//action when the add RadioButton is selected
@@ -670,7 +670,6 @@ public class EditIDSControlPanel extends JPanel implements ListSelectionListener
 	}
 
 
-	@Override
 	public void stateChanged(ChangeEvent e) {
 		if(e.getSource().getClass().equals(beaconsLogged_.getClass())){
 			if(((Number)beaconsLogged_.getValue()).intValue() < 1) KnownVehicle.setAmountOfSavedBeacons(-1);
@@ -746,13 +745,11 @@ public class EditIDSControlPanel extends JPanel implements ListSelectionListener
 	}
 
 
-	@Override
 	public void focusGained(FocusEvent arg0) {
 		saveAttributes();
 	}
 
 
-	@Override
 	public void focusLost(FocusEvent arg0) {
 		saveAttributes();
 	}

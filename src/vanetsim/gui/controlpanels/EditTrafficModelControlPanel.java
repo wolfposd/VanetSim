@@ -23,12 +23,11 @@ import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-
 import javax.swing.ButtonGroup;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
-import javax.swing.JRadioButton;
 import javax.swing.JPanel;
+import javax.swing.JRadioButton;
 
 import vanetsim.gui.helpers.TextAreaLabel;
 import vanetsim.localization.Messages;
@@ -140,7 +139,6 @@ public class EditTrafficModelControlPanel extends JPanel implements  ActionListe
 		add(space, c);
 	}
 	
-	@Override
 	public void actionPerformed(ActionEvent arg0) {
 		// TODO Auto-generated method stub
 		String command = arg0.getActionCommand();

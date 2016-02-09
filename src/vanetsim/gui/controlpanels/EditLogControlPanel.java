@@ -32,9 +32,9 @@ import javax.swing.JFileChooser;
 import javax.swing.JFormattedTextField;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 import javax.swing.JSeparator;
 import javax.swing.SwingConstants;
-import javax.swing.JPanel;
 import javax.swing.filechooser.FileFilter;
 
 import vanetsim.gui.Renderer;
@@ -257,11 +257,13 @@ public class EditLogControlPanel extends JPanel implements  FocusListener, Actio
 	      		
 		//define FileFilter for fileChooser
 		logFileFilter_ = new FileFilter(){
-			public boolean accept(File f) {
+			@Override
+            public boolean accept(File f) {
 				if (f.isDirectory()) return true;
 				return f.getName().toLowerCase().endsWith(".log"); //$NON-NLS-1$
 			}
-			public String getDescription () { 
+			@Override
+            public String getDescription () { 
 				return Messages.getString("EditLogControlPanel.logFiles") + " (*.log)"; //$NON-NLS-1$ //$NON-NLS-2$
 			}
 		};
@@ -294,7 +296,6 @@ public class EditLogControlPanel extends JPanel implements  FocusListener, Actio
 	
 	
 
-	@Override
 	public void focusGained(FocusEvent arg0) {
 		// TODO Auto-generated method stub
 		if("privacyPath".equals(((JFormattedTextField) arg0.getSource()).getName()) && attackerFlag){
@@ -334,12 +335,10 @@ public class EditLogControlPanel extends JPanel implements  FocusListener, Actio
 		}
 	}
 
-	@Override
 	public void focusLost(FocusEvent arg0) {
 		// TODO Auto-generated method stub
 	}
 
-	@Override
 	public void actionPerformed(ActionEvent arg0) {
 		// TODO Auto-generated method stub
 		String command = arg0.getActionCommand();

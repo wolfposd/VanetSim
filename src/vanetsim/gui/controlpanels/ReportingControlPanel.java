@@ -65,8 +65,8 @@ import vanetsim.map.Node;
 import vanetsim.map.Region;
 import vanetsim.map.Street;
 import vanetsim.scenario.IDSProcessor;
-import vanetsim.scenario.Vehicle;
 import vanetsim.scenario.RSU;
+import vanetsim.scenario.Vehicle;
 
 /**
  * This class contains the control elements for display of statistics and mix zone information
@@ -374,11 +374,13 @@ public final class ReportingControlPanel extends JPanel implements ActionListene
 		
 		//define FileFilter for fileChooser
 		logFileFilter_ = new FileFilter(){
-			public boolean accept(File f) {
+			@Override
+            public boolean accept(File f) {
 				if (f.isDirectory()) return true;
 				return f.getName().toLowerCase().endsWith(".log"); //$NON-NLS-1$
 			}
-			public String getDescription () { 
+			@Override
+            public String getDescription () { 
 				return Messages.getString("EditLogControlPanel.logFiles") + " (*.log)"; //$NON-NLS-1$ //$NON-NLS-2$
 			}
 		};
@@ -1121,7 +1123,7 @@ public final class ReportingControlPanel extends JPanel implements ActionListene
 				    System.err.println("Caught IOException: " + e.getMessage());
 				}
 		    }
-		    for(int j = 0; j < values.length; j++) returnValue[j] = (float)values[j]/files.size();	
+		    for(int j = 0; j < values.length; j++) returnValue[j] = values[j]/files.size();	
 
 		    boolean foundMixZone = false;
 		    
@@ -1155,7 +1157,7 @@ public final class ReportingControlPanel extends JPanel implements ActionListene
 		    	if(foundMixZone){
 		    		System.out.print("Mix-Zone" + i);
 			    	
-			    	for(int j = 0; j < values.length; j++) System.out.print(" " + (float)values[j]/files.size());
+			    	for(int j = 0; j < values.length; j++) System.out.print(" " + values[j]/files.size());
 			    	System.out.println("");	
 		    	}
 		    	
@@ -1201,7 +1203,7 @@ public final class ReportingControlPanel extends JPanel implements ActionListene
 				}
 		    }
 
-		    for(int j = 0; j < values.length; j++) if(values[j] != 0) returnValue[j] = (float)values[j]/files.size();
+		    for(int j = 0; j < values.length; j++) if(values[j] != 0) returnValue[j] = values[j]/files.size();
 		    
 		    return returnValue;
 		}
@@ -1241,7 +1243,7 @@ public final class ReportingControlPanel extends JPanel implements ActionListene
 
 	    float[] returnValues = new float[counter];
 	    
-	    for(int j = 0; j < returnValues.length; j++) 	returnValues[j] =  ((float)values[j]/files.size());
+	    for(int j = 0; j < returnValues.length; j++) 	returnValues[j] =  (values[j]/files.size());
 	
 	    
      	return returnValues;
@@ -1343,12 +1345,12 @@ public final class ReportingControlPanel extends JPanel implements ActionListene
 								
 								
 								if(l == 0){
-									out.write(" " + (float)(tmpData[l]/vehiclesTotal) + "\n");
+									out.write(" " + tmpData[l]/vehiclesTotal + "\n");
 								}
 								else if(l == 1){
 									tmpSum = 0;
 									for(int i = l; i < counter; i++) tmpSum += tmpData[i];
-									out.write(" " + (float)(tmpSum/vehiclesTotal) + "\n");
+									out.write(" " + tmpSum/vehiclesTotal + "\n");
 								}
 								else{
 									tmpSum = 0;
@@ -1360,7 +1362,7 @@ public final class ReportingControlPanel extends JPanel implements ActionListene
 											vehiclesTotal2 -= tmpData2[o][n];
 										}
 									}
-									out.write(" " + (float)(tmpSum/vehiclesTotal2) + "\n");
+									out.write(" " + tmpSum/vehiclesTotal2 + "\n");
 								}
 							}
 							 out.close();
@@ -2359,7 +2361,6 @@ public void getMax(){
 	/* (non-Javadoc)
  	* @see javax.swing.event.ListSelectionListener#valueChanged(javax.swing.event.ListSelectionEvent)
  	*/
-	@Override
 	public void valueChanged(ListSelectionEvent e) {
 	// TODO Auto-generated method stub
 		if(availableScripts_.getSelectedIndex() == 0) accumulateSpammerFiles();

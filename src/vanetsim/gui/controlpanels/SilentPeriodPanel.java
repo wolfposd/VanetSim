@@ -30,7 +30,6 @@ import java.text.NumberFormat;
 import javax.swing.JCheckBox;
 import javax.swing.JFormattedTextField;
 import javax.swing.JLabel;
-
 import javax.swing.JPanel;
 
 import vanetsim.localization.Messages;
@@ -164,13 +163,11 @@ public class SilentPeriodPanel extends JPanel implements ActionListener, FocusLi
 		return silentPeriodFrequency_;
 	}
 
-	@Override
 	public void focusGained(FocusEvent arg0) {
 		// TODO Auto-generated method stub
 		saveAttributes();
 	}
 
-	@Override
 	public void focusLost(FocusEvent arg0) {
 		// TODO Auto-generated method stub
 		saveAttributes();

@@ -30,7 +30,6 @@ import java.text.NumberFormat;
 import javax.swing.JCheckBox;
 import javax.swing.JFormattedTextField;
 import javax.swing.JLabel;
-
 import javax.swing.JPanel;
 
 import vanetsim.gui.helpers.PrivacyLogWriter;
@@ -157,13 +156,11 @@ public class SlowPanel extends JPanel implements ActionListener, FocusListener{
 		PrivacyLogWriter.log("Slow speed limit:" + Vehicle.getSLOW_SPEED_LIMIT() + ":Time to pseudonym change:" + Vehicle.getTIME_TO_PSEUDONYM_CHANGE());
 	}
 
-	@Override
 	public void focusGained(FocusEvent arg0) {
 		// TODO Auto-generated method stub
 		saveAttributes();
 	}
 
-	@Override
 	public void focusLost(FocusEvent arg0) {
 		// TODO Auto-generated method stub
 		saveAttributes();

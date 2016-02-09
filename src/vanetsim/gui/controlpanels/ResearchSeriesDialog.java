@@ -30,10 +30,9 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Random;
-
-import java.util.ArrayDeque;
 
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
@@ -147,6 +146,7 @@ public final class ResearchSeriesDialog extends JDialog implements ActionListene
 		
 		//WindowAdapter to catch closing event
         this.addWindowListener(new WindowAdapter() {
+            @Override
             public void windowClosing(WindowEvent event) {
                     closeDialog();
             }
@@ -874,7 +874,6 @@ public final class ResearchSeriesDialog extends JDialog implements ActionListene
 
 	public void windowActivated(WindowEvent e) {}
 
-	@Override
 	public void stateChanged(ChangeEvent arg0) {
 		// TODO Auto-generated method stub
 		
