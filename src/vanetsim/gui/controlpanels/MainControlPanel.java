@@ -19,16 +19,16 @@ package vanetsim.gui.controlpanels;
 
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.EventQueue;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
-import java.awt.Point;
+import java.awt.Insets;
 import java.io.File;
 
 import javax.swing.JFileChooser;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
-import javax.swing.JViewport;
 import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -76,32 +76,33 @@ public final class MainControlPanel extends JPanel implements ChangeListener{
 	 * Constructor for the main control panel.
 	 */
 	public MainControlPanel(){
-		java.awt.EventQueue.invokeLater ( new Runnable() {
-
-			public void run() {
-				JFileChooser tmpChooser = new JFileChooser();
-				tmpChooser.setMultiSelectionEnabled(false);
-				fileChooser_ = tmpChooser;	//now it's ready and we can set the global filechooser
-
-			}
-		} );
+        EventQueue.invokeLater(() -> {
+            JFileChooser tmpChooser = new JFileChooser();
+            tmpChooser.setMultiSelectionEnabled(false);
+            fileChooser_ = tmpChooser; 
+            // now it's ready and we can set the global filechooser
+            });
 
 		xmlFileFilter_ = new FileFilter(){
-			public boolean accept(File f) {
+			@Override
+            public boolean accept(File f) {
 				if (f.isDirectory()) return true;
 				return f.getName().toLowerCase().endsWith(".xml"); //$NON-NLS-1$
 			}
-			public String getDescription () { 
+			@Override
+            public String getDescription () { 
 				return Messages.getString("MainControlPanel.xmlFiles") + " (*.xml)"; //$NON-NLS-1$ //$NON-NLS-2$
 			}
 		};
 		
 		osmFileFilter_ = new FileFilter(){
-			public boolean accept(File f) {
+			@Override
+            public boolean accept(File f) {
 				if (f.isDirectory()) return true;
 				return f.getName().toLowerCase().endsWith(".osm"); //$NON-NLS-1$
 			}
-			public String getDescription () { 
+			@Override
+            public String getDescription () { 
 				return Messages.getString("MainControlPanel.openStreetMapFiles") + " (*.osm)"; //$NON-NLS-1$ //$NON-NLS-2$
 			}
 		};
@@ -112,14 +113,6 @@ public final class MainControlPanel extends JPanel implements ChangeListener{
 		size.setSize(size.width + 155, size.height < 800? 800: size.height);
 		setMinimumSize(new Dimension(size.width+50,400));
 		editPanel_.setMinimumSize(size);
-		GridBagConstraints c = new GridBagConstraints();
-		c.fill = GridBagConstraints.BOTH;
-		c.anchor = GridBagConstraints.PAGE_START;
-		c.weightx = 1.0;
-		c.weighty = 1.0;
-		c.gridx = 0;
-		c.gridy = 0;
-		c.gridheight = 1;
 		
 		
 		tabbedPane_.addTab(Messages.getString("MainControlPanel.simulateTab"), simulatePanel_); //$NON-NLS-1$
@@ -131,6 +124,7 @@ public final class MainControlPanel extends JPanel implements ChangeListener{
 	
 		UIManager.put("TabbedPane.contentOpaque", false);
 		JScrollPane scrollPane = new JScrollPane(tabbedPane_);
+		scrollPane.getVerticalScrollBar().setUnitIncrement(16);
 		tabbedPane_.setOpaque(false);
 		simulatePanel_.setOpaque(false);
 		editPanel_.setOpaque(false);
@@ -140,11 +134,13 @@ public final class MainControlPanel extends JPanel implements ChangeListener{
 		scrollPane.setOpaque(false);
 		scrollPane.getViewport().setOpaque(false);
 
-		JViewport jv = scrollPane.getViewport();  
-		jv.setViewPosition(new Point(0,0)); 
-		scrollPane.getVerticalScrollBar().setValue(0);
-		add(scrollPane, c);
-	}
+        add(scrollPane, new GridBagConstraints(0, 0, 1, 1, 1.0, 1.0, GridBagConstraints.PAGE_START, GridBagConstraints.BOTH, new Insets(0,
+                0, 0, 0), 0, 0));
+        
+        EventQueue.invokeLater(() -> {
+            scrollPane.getVerticalScrollBar().setValue(0);
+        });
+    }
 
 	/**
 	 * Gets the central <code>JFileChooser</code>. If it does not exist, it waits until it's created
@@ -238,7 +234,8 @@ public final class MainControlPanel extends JPanel implements ChangeListener{
 	 * 
 	 * @param e a <code>ChangeEvent</code>
 	 */	
-	public void stateChanged(ChangeEvent e){
+	@Override
+    public void stateChanged(ChangeEvent e){
 		
 		if(tabbedPane_.getSelectedComponent() instanceof ReportingControlPanel){
 			reportingPanel_.setActive(true);

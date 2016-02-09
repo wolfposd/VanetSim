@@ -250,7 +250,8 @@ public final class EditEventControlPanel extends JPanel implements ActionListene
 	 * 
 	 * @param e	an <code>ActionEvent</code>
 	 */	
-	public void actionPerformed(ActionEvent e) {
+	@Override
+    public void actionPerformed(ActionEvent e) {
 		String command = e.getActionCommand();
 		if("addEvent".equals(command)){ //$NON-NLS-1$
 			String item = (String)eventTypeChoice_.getSelectedItem();
@@ -270,7 +271,7 @@ public final class EditEventControlPanel extends JPanel implements ActionListene
 			} catch (Exception e2) { ErrorLog.log(Messages.getString("EditEventControlPanel.errorCreatingEvent"), 6, getClass().getName(), "actionPerformed", e2);} //$NON-NLS-1$ //$NON-NLS-2$
 		} else if("delEvent".equals(command)){ //$NON-NLS-1$
 			if(list_.getSelectedIndex() > -1){
-				Event deleteEvent = (Event)list_.getSelectedValue();
+				Event deleteEvent = list_.getSelectedValue();
 				boolean doDelete = true;
 				if(deleteEvent instanceof StartBlocking){
 					StartBlocking startBlockingEvent = (StartBlocking) deleteEvent;
